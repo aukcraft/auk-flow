@@ -36,12 +36,12 @@ pub struct SendInputInjector;
 #[cfg(windows)]
 mod windows_impl {
     use super::*;
-    use windows::core::PCWSTR;
+    use crate::events::Button;
     use windows::Win32::UI::Input::KeyboardAndMouse::{
-        SendInput, INPUT, INPUT_KEYBOARD, INPUT_MOUSE, KEYBDINPUT, KEYEVENTF_KEYUP,
-        MOUSEEVENTF_ABSOLUTE, MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP, MOUSEEVENTF_MIDDLEDOWN,
-        MOUSEEVENTF_MIDDLEUP, MOUSEEVENTF_MOVE, MOUSEEVENTF_RIGHTDOWN, MOUSEEVENTF_RIGHTUP,
-        MOUSEEVENTF_WHEEL, MOUSEINPUT, VIRTUAL_KEY,
+        SendInput, INPUT, INPUT_KEYBOARD, INPUT_MOUSE, KEYBDINPUT, KEYBD_EVENT_FLAGS,
+        KEYEVENTF_KEYUP, MOUSEEVENTF_ABSOLUTE, MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP,
+        MOUSEEVENTF_MIDDLEDOWN, MOUSEEVENTF_MIDDLEUP, MOUSEEVENTF_MOVE, MOUSEEVENTF_RIGHTDOWN,
+        MOUSEEVENTF_RIGHTUP, MOUSEEVENTF_WHEEL, MOUSEINPUT, MOUSE_EVENT_FLAGS, VIRTUAL_KEY,
     };
 
     fn to_abs(v: f64) -> i32 {
@@ -58,8 +58,8 @@ mod windows_impl {
             input.Anonymous.mi = MOUSEINPUT {
                 dx,
                 dy,
-                mouseData: data,
-                dwFlags: flags,
+                mouseData: data as u32,
+                dwFlags: MOUSE_EVENT_FLAGS(flags),
                 time: 0,
                 dwExtraInfo: 0,
             };
@@ -77,7 +77,7 @@ mod windows_impl {
             input.Anonymous.ki = KEYBDINPUT {
                 wVk: code,
                 wScan: 0,
-                dwFlags: flags,
+                dwFlags: KEYBD_EVENT_FLAGS(flags),
                 time: 0,
                 dwExtraInfo: 0,
             };
@@ -116,10 +116,6 @@ mod windows_impl {
             }
         }
     }
-
-    // 抑制未使用导入告警（PCWSTR 仅在扩展实现中使用）
-    #[allow(unused)]
-    fn _unused(_: PCWSTR) {}
 }
 
 #[cfg(test)]
