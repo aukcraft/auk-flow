@@ -24,3 +24,6 @@ services/training/checkpoints/
 services/training/synthetic_corpus.jsonl
 __pycache__/
 *.pyc
+packages/desktop/dist/
+packages/desktop/src-tauri/target/
+packages/desktop/src-tauri/gen/

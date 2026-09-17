@@ -36,3 +36,32 @@ export type PanelMessageLike =
   | { kind: "frame"; seq: number; boxes: { x: number; y: number; w: number; h: number; confidence: number }[] }
   | { kind: "state"; from: string; to: string; reason: string; ts: number }
   | { kind: "log"; level: string; msg: string };
+
+/** 权限白名单（与 desktop src-tauri ALLOWED_PERMISSIONS 同源，改动须双侧同步） */
+export const PERMISSION_WHITELIST = ["panel.log", "panel.state", "sim.trajectory.read"] as const;
+
+export type Permission = (typeof PERMISSION_WHITELIST)[number];
+
+export interface LoadedManifest extends PluginManifest {
+  entry?: string;
+  permissions?: string[];
+}
+
+/** 清单校验：字段完整性 + id 格式 + 权限白名单。返回错误列表（空 = 通过）。 */
+export function validateManifest(m: unknown): string[] {
+  const errs: string[] = [];
+  const v = m as Record<string, unknown> | null;
+  if (!v || typeof v !== "object") return ["manifest 必须是对象"];
+  if (typeof v["id"] !== "string" || !/^[a-z0-9-]{2,40}$/.test(v["id"])) errs.push("id 须为 2-40 位小写字母/数字/连字符");
+  if (typeof v["name"] !== "string" || v["name"].length === 0) errs.push("name 不能为空");
+  if (typeof v["version"] !== "string" || !/^\d+\.\d+\.\d+/.test(v["version"])) errs.push("version 须为 semver");
+  if (!Array.isArray(v["params"])) errs.push("params 必须是数组（可为空）");
+  if (Array.isArray(v["permissions"])) {
+    for (const p of v["permissions"]) {
+      if (typeof p !== "string" || !(PERMISSION_WHITELIST as readonly string[]).includes(p)) {
+        errs.push(`权限超出白名单: ${String(p)}`);
+      }
+    }
+  }
+  return errs;
+}

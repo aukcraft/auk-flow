@@ -1,0 +1,8 @@
+{
+  "id": "demo-logger",
+  "name": "演示日志插件",
+  "version": "0.1.0",
+  "description": "记录模拟页轨迹统计到面板日志（plugin-core 协议示例）",
+  "entry": "main.js",
+  "permissions": ["panel.log"]
+}

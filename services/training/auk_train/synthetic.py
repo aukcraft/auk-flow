@@ -62,12 +62,26 @@ def windmouse_trial(
     return pts
 
 
-def write_synthetic_corpus(path: str, n: int, seed: int = 42) -> None:
-    """生成 JSONL 合成语料（匿名格式，字段与真实语料一致）。"""
+def write_synthetic_corpus(
+    path: str, n: int, seed: int = 42, fixed_frac: float = 0.5
+) -> None:
+    """生成 JSONL 合成语料（匿名格式，字段与真实语料一致）。
+
+    fixed_frac: 固定点位占比（3×3 网格的 8 个方向×距离档循环），
+                其余为随机点位（距离谱×八方向，与靶场随机模式同分布）。
+    """
     rng = random.Random(seed)
+    # 固定点位条件集：距离档 × 八方向（对应靶场 fixed 网格的中心↔角落遍历）
+    fixed_conds = [
+        (d, a) for d in (60, 220, 620, 1200) for a in range(0, 360, 45)
+    ]
     with open(path, "w", encoding="utf-8") as f:
-        for _ in range(n):
-            trial = windmouse_trial(rng=rng)
+        for i in range(n):
+            if rng.random() < fixed_frac:
+                dist, theta_deg = fixed_conds[i % len(fixed_conds)]
+            else:
+                dist, theta_deg = None, None  # 随机
+            trial = windmouse_trial(dist=dist, theta_deg=theta_deg, rng=rng)
             dist = math.hypot(trial[-1][1] - trial[0][1], trial[-1][2] - trial[0][2])
             theta = math.degrees(math.atan2(trial[-1][2] - trial[0][2], trial[-1][1] - trial[0][1]))
             f.write(

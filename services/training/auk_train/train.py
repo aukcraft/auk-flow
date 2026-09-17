@@ -39,10 +39,13 @@ def run_training(
     lr: float = 1e-3,
     device: str = "cpu",
     log_every: int = 10,
+    batch_size: int = 64,
 ) -> tuple[TrajectoryLSTM, list[float]]:
     model = TrajectoryLSTM(cond_dim=conds.shape[1]).to(device)
     print(f"model params: {model.n_params:,}")
     opt = torch.optim.Adam(model.parameters(), lr=lr)
+    n = len(conds)
+    rs = np.random.RandomState(0)
 
     t_cond = torch.tensor(conds, dtype=torch.float32, device=device)
     t_steps = torch.tensor(steps, dtype=torch.float32, device=device)
@@ -51,15 +54,25 @@ def run_training(
 
     losses: list[float] = []
     for ep in range(epochs):
-        opt.zero_grad()
-        out, p_eos = model(t_cond, t_in, t_phase)
-        loss = nll_loss(out, p_eos, t_steps, t_phase)
-        loss.backward()
-        torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
-        opt.step()
-        losses.append(loss.item())
+        perm = rs.permutation(n)
+        ep_loss = 0.0
+        nb = 0
+        for s0 in range(0, n, batch_size):
+            idx = perm[s0 : s0 + batch_size]
+            if len(idx) < 2:
+                continue
+            sel = torch.as_tensor(idx, device=device)
+            opt.zero_grad()
+            out, p_eos = model(t_cond[sel], t_in[sel], t_phase[sel])
+            loss = nll_loss(out, p_eos, t_steps[sel], t_phase[sel])
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
+            opt.step()
+            ep_loss += loss.item()
+            nb += 1
+        losses.append(ep_loss / max(nb, 1))
         if (ep + 1) % log_every == 0 or ep == 0:
-            print(f"epoch {ep + 1}/{epochs}  nll={loss.item():.4f}")
+            print(f"epoch {ep + 1}/{epochs}  nll={losses[-1]:.4f}")
     return model, losses
 
 
