@@ -17,3 +17,10 @@ build/
 # 环境与密钥
 .env
 .env.*
+
+# Python 训练
+services/training/.venv/
+services/training/checkpoints/
+services/training/synthetic_corpus.jsonl
+__pycache__/
+*.pyc
