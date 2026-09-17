@@ -54,7 +54,7 @@ mod windows_impl {
             r#type: INPUT_MOUSE,
             ..Default::default()
         };
-        unsafe {
+        {
             input.Anonymous.mi = MOUSEINPUT {
                 dx,
                 dy,
@@ -73,7 +73,7 @@ mod windows_impl {
             ..Default::default()
         };
         let flags = if up { KEYEVENTF_KEYUP.0 } else { 0 };
-        unsafe {
+        {
             input.Anonymous.ki = KEYBDINPUT {
                 wVk: code,
                 wScan: 0,

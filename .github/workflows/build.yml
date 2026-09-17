@@ -52,7 +52,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Compress-Archive -Path "target/${{ matrix.target }}/release/auk_motion.lib","target/${{ matrix.target }}/release/*.dll" -DestinationPath "$env:GITHUB_WORKSPACE/${{ matrix.artifact }}.zip" -ErrorAction SilentlyContinue
+          Compress-Archive -Path "target/${{ matrix.target }}/release/*.rlib","target/${{ matrix.target }}/release/*.dll" -DestinationPath "$env:GITHUB_WORKSPACE/${{ matrix.artifact }}.zip" -ErrorAction SilentlyContinue
           if (-not (Test-Path "$env:GITHUB_WORKSPACE/${{ matrix.artifact }}.zip")) {
             New-Item -ItemType File -Path "$env:GITHUB_WORKSPACE/${{ matrix.artifact }}.zip" | Out-Null
             Add-Content "$env:GITHUB_WORKSPACE/BUILD_NOTE.txt" "auk-motion is a lib crate; import lib packaged if present."
