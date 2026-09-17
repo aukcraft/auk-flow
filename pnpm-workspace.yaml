@@ -1,4 +1,5 @@
 packages:
   - "packages/*"
+# pnpm 12 构建脚本审批（esbuild 为 vitest 依赖，postinstall 需要放行）
 allowBuilds:
-  esbuild: set this to true or false
+  esbuild: true
