@@ -1,0 +1,47 @@
+blank_issues_enabled: false
+contact_links: []
+issue_templates:
+  - name: Bug 报告
+    description: 功能不符合预期的技术问题
+    labels: ["bug"]
+    body:
+      - type: textarea
+        id: what-happened
+        attributes:
+          label: 观察到的行为
+          description: 描述现象与期望行为的差异（请使用技术化表述，如"移动指令在 150% 缩放下落点偏移 40px"）
+        validations:
+          required: true
+      - type: textarea
+        id: repro
+        attributes:
+          label: 复现步骤
+          description: 最小脚本/配置 + 操作序列
+        validations:
+          required: true
+      - type: textarea
+        id: env
+        attributes:
+          label: 环境
+          description: OS / 版本 / 显示缩放 / 相关日志（engine 的 log 与 state 事件）
+      - type: textarea
+        id: logs
+        attributes:
+          label: 日志与事件
+          description: 粘贴 log(level,msg) 与 state(from,to,reason,ts) 输出
+  - name: 功能请求
+    description: 引擎/面板能力增强
+    labels: ["enhancement"]
+    body:
+      - type: textarea
+        id: problem
+        attributes:
+          label: 要解决的问题
+          description: 该能力服务于哪类通用自动化/测试场景
+        validations:
+          required: true
+      - type: textarea
+        id: proposal
+        attributes:
+          label: 建议的方案
+          description: 期望的指令/API/面板行为

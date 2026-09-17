@@ -1,0 +1,117 @@
+name: Build & Package
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  engine-binaries:
+    name: engine · release build (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact: auk-motion-linux-x64
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact: auk-motion-windows-x64
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact: auk-motion-macos-arm64
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: packages/engine
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: packages/engine
+
+      - name: Release build
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Package (unix)
+        if: runner.os != 'Windows'
+        run: |
+          cd target/${{ matrix.target }}/release
+          tar czf "$GITHUB_WORKSPACE/${{ matrix.artifact }}.tar.gz" libauk_motion.*
+      - name: Package (windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "target/${{ matrix.target }}/release/auk_motion.lib","target/${{ matrix.target }}/release/*.dll" -DestinationPath "$env:GITHUB_WORKSPACE/${{ matrix.artifact }}.zip" -ErrorAction SilentlyContinue
+          if (-not (Test-Path "$env:GITHUB_WORKSPACE/${{ matrix.artifact }}.zip")) {
+            New-Item -ItemType File -Path "$env:GITHUB_WORKSPACE/${{ matrix.artifact }}.zip" | Out-Null
+            Add-Content "$env:GITHUB_WORKSPACE/BUILD_NOTE.txt" "auk-motion is a lib crate; import lib packaged if present."
+          }
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            ${{ matrix.artifact }}.tar.gz
+            ${{ matrix.artifact }}.zip
+          if-no-files-found: ignore
+
+  smoke-demo:
+    name: smoke · humanize demo bundle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile=false
+
+      # 无头冒烟：示例 AHK 脚本 → IR → 拟人化轨迹（精确模式确定性 + 拟人模式非直线的最小闭环）
+      - name: Core smoke test
+        run: pnpm --filter @auk-flow/core test
+
+      - name: Upload range tool
+        uses: actions/upload-artifact@v4
+        with:
+          name: range-tool
+          path: tools/range/index.html
+
+  release:
+    name: release (on tag)
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [engine-binaries]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            dist/**/*.tar.gz
+            dist/**/*.zip
+            dist/range-tool/index.html

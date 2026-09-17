@@ -1,0 +1,16 @@
+{
+  "name": "auk-flow",
+  "private": true,
+  "version": "0.1.0",
+  "description": "AukFlow — PC 优先的拟人化自动化引擎",
+  "packageManager": "pnpm@12.4.1",
+  "scripts": {
+    "build": "pnpm -r --filter './packages/*' build",
+    "test": "pnpm -r --filter './packages/*' test",
+    "lint": "pnpm -r --filter './packages/*' lint",
+    "typecheck": "pnpm -r --filter './packages/*' typecheck"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "@auk-flow/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo 'desktop shell: pending Tauri scaffold (see tasks 6.1-6.2, RNW gate)'",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}

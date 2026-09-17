@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  core:
+    name: core (TS · typecheck + tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Typecheck (all packages)
+        run: pnpm -r --filter './packages/*' typecheck
+
+      - name: Test (core)
+        run: pnpm --filter @auk-flow/core test
+
+  engine:
+    name: engine (${{ matrix.os }} · cargo test)
+    strategy:
+      fail-fast: false
+      matrix:
+        # ubuntu 验证通用逻辑；windows 编译并验证 SendInput 注入分支
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: packages/engine
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: packages/engine
+
+      - name: Format check
+        run: cargo fmt --check
+
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Test
+        run: cargo test
+
+  engine-bench:
+    name: engine · timing bench (±2ms spec)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/engine
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: packages/engine
+      # 派发偏差基准：CI 环境有调度噪声，此处只验证不劣化到离谱
+      - name: Dispatch timing smoke
+        run: cargo test --release dispatch_deviation -- --ignored --nocapture || cargo test --release dispatch

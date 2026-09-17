@@ -1,0 +1,16 @@
+{
+  "name": "@auk-flow/plugin-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "description": "auk-plugin-spec PC 宿主边界：engine 能力 → UI（manifest/schema/lifecycle/events/host API）",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
