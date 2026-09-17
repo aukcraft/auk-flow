@@ -143,6 +143,8 @@ jobs:
           mkdir -p dist-tauri
           cp "packages/desktop/src-tauri/target/release/${{ matrix.binary }}" dist-tauri/ || true
           cp -r packages/desktop/src-tauri/target/release/bundle dist-tauri/ || true
+          # 插件随包分发（运行时按 exe 同级 plugins/ 查找）
+          cp -r plugins dist-tauri/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

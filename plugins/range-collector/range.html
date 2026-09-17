@@ -29,6 +29,7 @@
 <div id="hud">
   <span>trials: <b id="count">0</b></span>
   <span>导出: <button id="dl">下载 JSONL</button></span>
+  <span style="display:none" id="saveWrap">保存: <button id="saveBtn">存入语料库（桌面端）</button></span>
   <span>
     <label>年龄段:
       <select id="age">
@@ -247,7 +248,20 @@ addEventListener("message", (e) => {
     const lines = state.trials.map((t) => JSON.stringify(t)).join("\n");
     e.source?.postMessage({ type: "auk:corpus", jsonl: lines }, "*");
   }
+  if (e.data?.type === "auk:saved") {
+    document.getElementById("saveBtn").textContent = "已保存 ✓";
+    setTimeout(() => (document.getElementById("saveBtn").textContent = "存入语料库（桌面端）"), 2000);
+  }
 });
+if (window.parent !== window) {
+  document.getElementById("saveWrap").style.display = "inline";
+  document.getElementById("saveBtn").onclick = () => {
+    const jsonl = state.trials.map((t) => JSON.stringify(t)).join("\n");
+    if (!jsonl) { alert("还没有已确认的 trial"); return; }
+    const ts = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    parent.postMessage({ type: "auk:save-corpus", name: `range-${ts}.jsonl`, content: jsonl }, "*");
+  };
+}
 if (!gate.blocked) nextTrial();
 </script>
 </body>

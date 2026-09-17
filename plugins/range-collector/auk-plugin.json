@@ -1,0 +1,8 @@
+{
+  "id": "range-collector",
+  "name": "靶场采集",
+  "version": "0.1.0",
+  "description": "两点位移轨迹采集：A（光标起点，绿）→ B（目标，红），点击后回放确认，OK 保留/重试丢弃；固定网格与随机点位模式；匿名 JSONL 导出",
+  "permissions": ["tab.render", "corpus.write"],
+  "contributes": { "tab": { "label": "靶场采集", "entry": "range.html" } }
+}

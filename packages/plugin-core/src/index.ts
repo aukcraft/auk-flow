@@ -38,7 +38,13 @@ export type PanelMessageLike =
   | { kind: "log"; level: string; msg: string };
 
 /** 权限白名单（与 desktop src-tauri ALLOWED_PERMISSIONS 同源，改动须双侧同步） */
-export const PERMISSION_WHITELIST = ["panel.log", "panel.state", "sim.trajectory.read"] as const;
+export const PERMISSION_WHITELIST = [
+  "panel.log",
+  "panel.state",
+  "sim.trajectory.read",
+  "corpus.write",
+  "tab.render",
+] as const;
 
 export type Permission = (typeof PERMISSION_WHITELIST)[number];
 

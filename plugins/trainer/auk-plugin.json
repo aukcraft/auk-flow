@@ -1,0 +1,8 @@
+{
+  "id": "trainer",
+  "name": "训练",
+  "version": "0.1.0",
+  "description": "语料审计与统计（白名单/年龄区间/距离分布）；WindMouse 演示轨迹生成并发送模拟页；Python 训练管线入口说明",
+  "permissions": ["tab.render", "sim.trajectory.read"],
+  "contributes": { "tab": { "label": "训练", "entry": "index.html" } }
+}
